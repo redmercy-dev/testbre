@@ -93,19 +93,39 @@ def check_existing_contact(identifier: str, identifier_type: str, api_key: str) 
         return False
 
 
-def get_contact_lists(api_key):
-    """
-    Retrieves the available contact lists from Brevo API.
-    """
-    try:
-        url = "https://api.brevo.com/v3/contacts/lists?limit=60&offset=0&sort=desc"
+def get_all_contact_lists(api_key):
+    all_lists = []
+    offset = 0
+    limit = 50  # Brevo maximum
+    sort = "desc"
+
+    while True:
+        # Build the URL with pagination
+        url = f"https://api.brevo.com/v3/contacts/lists?limit={limit}&offset={offset}&sort={sort}"
         headers = {"accept": "application/json", "api-key": api_key}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json().get("lists", [])
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to retrieve contact lists: {e}")
-        return []
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            st.error(f"Failed to retrieve contact lists at offset {offset}: {e}")
+            break
+
+        data = response.json()
+        lists_chunk = data.get("lists", [])
+
+        if not lists_chunk:
+            # No more lists to fetch
+            break
+
+        # Add to the master list
+        all_lists.extend(lists_chunk)
+
+        # Prepare for next page
+        offset += limit
+
+    return all_lists
+
 
 
 def create_contact(email, first_name, last_name, phone, list_id, api_key):
