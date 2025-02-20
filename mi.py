@@ -98,7 +98,7 @@ def get_contact_lists(api_key):
     Retrieves the available contact lists from Brevo API.
     """
     try:
-        url = "https://api.brevo.com/v3/contacts/lists?limit=50&offset=0&sort=desc"
+        url = "https://api.brevo.com/v3/contacts/lists?limit=60&offset=0&sort=desc"
         headers = {"accept": "application/json", "api-key": api_key}
         response = requests.get(url, headers=headers)
         response.raise_for_status()
