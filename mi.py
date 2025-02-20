@@ -93,10 +93,14 @@ def check_existing_contact(identifier: str, identifier_type: str, api_key: str) 
         return False
 
 
-def get_all_contact_lists(api_key):
+def get_contact_lists(api_key):
+    """
+    Retrieves ALL contact lists from Brevo using pagination,
+    since the API has a maximum limit of 50 per request.
+    """
     all_lists = []
     offset = 0
-    limit = 50  # Brevo maximum
+    limit = 50  # Brevo's documented maximum
     sort = "desc"
 
     while True:
@@ -121,11 +125,10 @@ def get_all_contact_lists(api_key):
         # Add to the master list
         all_lists.extend(lists_chunk)
 
-        # Prepare for next page
+        # Prepare for the next "page"
         offset += limit
 
     return all_lists
-
 
 
 def create_contact(email, first_name, last_name, phone, list_id, api_key):
@@ -141,7 +144,7 @@ def create_contact(email, first_name, last_name, phone, list_id, api_key):
                 "FIRSTNAME": first_name,
                 "LASTNAME": last_name,
                 "SMS": phone,
-                "WHATSAPP": phone  # <-- Added this line
+                "WHATSAPP": phone  # <-- Key change: pass phone under "WHATSAPP" as well
             },
             "listIds": [list_id]
         }
@@ -276,7 +279,10 @@ def main():
                 result = upload_file(contact_id, file_path, api_key)
                 os.remove(file_path)
                 if result:
-                    st.success(f"✅ Contact {first_name} {last_name} added to list '{selected_list}' and PDF '{file_name}' uploaded successfully.")
+                    st.success(
+                        f"✅ Contact {first_name} {last_name} added to list '{selected_list}' "
+                        f"and PDF '{file_name}' uploaded successfully."
+                    )
                     st.info("To upload another file, repeat the process above.")
             else:
                 st.error("Failed to retrieve contact ID after creation.")
