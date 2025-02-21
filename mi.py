@@ -289,7 +289,7 @@ def main():
                 else:
                     st.success(
                         f"✅ Contact {first_name} {last_name} added to list '{selected_list}' "
-                        "without any PDF upload."
+                        "There was no PDF upload."
                     )
                 st.info("To add another contact (and optionally upload a file), repeat the process above.")
             else:
