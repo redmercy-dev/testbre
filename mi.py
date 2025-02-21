@@ -144,7 +144,7 @@ def create_contact(email, first_name, last_name, phone, list_id, api_key):
                 "FIRSTNAME": first_name,
                 "LASTNAME": last_name,
                 "SMS": phone,
-                "WHATSAPP": phone  # <-- Key change: pass phone under "WHATSAPP" as well
+                "WHATSAPP": phone  # <--pass phone under "WHATSAPP" as well
             },
             "listIds": [list_id]
         }
