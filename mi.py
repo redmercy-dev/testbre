@@ -243,14 +243,14 @@ def main():
     list_options = {lst["name"]: lst["id"] for lst in lists}
     selected_list = st.sidebar.selectbox("Select List to Add Contact", list_options.keys())
 
-    # File uploader for PDF selection
-    uploaded_file = st.sidebar.file_uploader("Upload PDF", type=["pdf"])
+    # File uploader for PDF selection (optional now)
+    uploaded_file = st.sidebar.file_uploader("Upload PDF (Optional)", type=["pdf"])
     file_name = uploaded_file.name if uploaded_file else None
 
     if st.sidebar.button("Add Contact & Send PDF"):
-        # Check if all fields are provided
-        if not all([first_name, last_name, email, phone, uploaded_file, file_name]):
-            st.error("Please fill in all fields and upload a PDF file.")
+        # Check mandatory fields for contact creation
+        if not all([first_name, last_name, email, phone]):
+            st.error("Please fill in all required fields (First Name, Last Name, Email, Phone).")
             return
 
         # Final validations before API call
@@ -271,19 +271,27 @@ def main():
         if create_contact(email, first_name, last_name, phone, list_id, api_key):
             contact_id = get_contact_id(email, api_key)
             if contact_id:
-                # Save the uploaded file temporarily
-                file_path = file_name  # Use the original file name as temporary path
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
+                # If a file is uploaded, proceed with upload
+                if uploaded_file and file_name:
+                    file_path = file_name  # Use the original file name as temporary path
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
 
-                result = upload_file(contact_id, file_path, api_key)
-                os.remove(file_path)
-                if result:
+                    result = upload_file(contact_id, file_path, api_key)
+                    os.remove(file_path)
+                    if result:
+                        st.success(
+                            f"✅ Contact {first_name} {last_name} added to list '{selected_list}' "
+                            f"and PDF '{file_name}' uploaded successfully."
+                        )
+                    else:
+                        st.error("Failed to upload the PDF file.")
+                else:
                     st.success(
                         f"✅ Contact {first_name} {last_name} added to list '{selected_list}' "
-                        f"and PDF '{file_name}' uploaded successfully."
+                        "without any PDF upload."
                     )
-                    st.info("To upload another file, repeat the process above.")
+                st.info("To add another contact (and optionally upload a file), repeat the process above.")
             else:
                 st.error("Failed to retrieve contact ID after creation.")
         else:
